@@ -57,6 +57,8 @@ namespace Meebey.SmartIrc4net
     public delegate void QuitEventHandler(object sender, QuitEventArgs e);
     public delegate void AwayEventHandler(object sender, AwayEventArgs e);
     public delegate void WhoEventHandler(object sender, WhoEventArgs e);
+    public delegate void WhoIsUserEventHandler(object sender, WhoIsUserEventArgs e);
+    public delegate void IsOnEventHandler(object sender, IsOnEventArgs e);
     public delegate void MotdEventHandler(object sender, MotdEventArgs e);
     public delegate void PongEventHandler(object sender, PongEventArgs e);
     public delegate void BounceEventHandler(object sender, BounceEventArgs e);

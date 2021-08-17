@@ -152,7 +152,7 @@ namespace Meebey.SmartIrc4net
         
                     if (bytes > 0) {
                         DccSendSentBlockEvent(new DccSendEventArgs(this, _Buffer, bytes));
-                        Console.Write(".");
+                        System.Console.Write(".");
                     }
                 } while(bytes > 0);
             } else {
@@ -169,7 +169,7 @@ namespace Meebey.SmartIrc4net
             
             isValid = false;
             isConnected = false;
-            Console.WriteLine("--> Filetrangsfer Endet / Bytes sent: " + _SentBytes + " of " + _Filesize);
+            System.Console.WriteLine("--> Filetrangsfer Endet / Bytes sent: " + _SentBytes + " of " + _Filesize);
             DccSendStopEvent(new DccEventArgs(this));            
         }
 

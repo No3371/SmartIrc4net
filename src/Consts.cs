@@ -69,6 +69,7 @@ namespace Meebey.SmartIrc4net
         Quit,
         Who,
         WhoIs,
+        IsOn,
         WhoWas,
         Name,
         Topic,

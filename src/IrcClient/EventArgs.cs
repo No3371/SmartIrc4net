@@ -430,6 +430,25 @@ namespace Meebey.SmartIrc4net
         }
     }
     
+    public class WhoIsUserEventArgs : IrcEventArgs
+    {
+        
+        public WhoIsUserInfo WhoIsUserInfo { get; private set; }
+
+        internal WhoIsUserEventArgs(IrcMessageData data, WhoIsUserInfo whoInfo) : base(data)
+        {
+            WhoIsUserInfo = whoInfo;
+        }
+    }
+
+    public class IsOnEventArgs : IrcEventArgs
+    {
+
+        internal IsOnEventArgs(IrcMessageData data) : base(data)
+        {
+        }
+    }
+
     /// <summary>
     ///
     /// </summary>

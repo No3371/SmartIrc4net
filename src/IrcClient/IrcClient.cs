@@ -139,6 +139,8 @@ namespace Meebey.SmartIrc4net
         public event VoiceEventHandler          OnVoice;
         public event DevoiceEventHandler        OnDevoice;
         public event WhoEventHandler            OnWho;
+        public event WhoIsUserEventHandler      OnWhoIsUser;
+        public event IsOnEventHandler      OnIsOn;
         public event MotdEventHandler           OnMotd;
         public event TopicEventHandler          OnTopic;
         public event TopicChangeEventHandler    OnTopicChange;
@@ -448,9 +450,15 @@ namespace Meebey.SmartIrc4net
         /// </summary>
         public IrcClient()
         {
-#if LOG4NET
-            Logger.Main.Debug("IrcClient created");
-#endif
+            OnReadLine        += new ReadLineEventHandler(_Worker);
+            OnDisconnected    += new EventHandler(_OnDisconnected);
+            OnConnectionError += new EventHandler(_OnConnectionError);
+
+            ChannelModeMap = new ChannelModeMap();
+        }
+
+        public IrcClient(CancellationToken cancellationToken) : base(cancellationToken)
+        {
             OnReadLine        += new ReadLineEventHandler(_Worker);
             OnDisconnected    += new EventHandler(_OnDisconnected);
             OnConnectionError += new EventHandler(_OnConnectionError);
@@ -476,6 +484,18 @@ namespace Meebey.SmartIrc4net
             ChannelModeMap = new ChannelModeMap();
             base.Connect(addresslist, port);
         }
+
+        /// <summary>
+        /// Connection parameters required to establish an server connection.
+        /// </summary>
+        /// <param name="addresslist">The list of server hostnames.</param>
+        /// <param name="port">The TCP port the server listens on.</param>
+        public override System.Threading.Tasks.Task ConnectTask(string[] addresslist, int port)
+        {
+            _SupportNonRfcLocked = true;
+            ChannelModeMap = new ChannelModeMap();
+            return base.ConnectTask(addresslist, port);
+        }
         
         /// <overloads>
         /// Reconnects to the current server.
@@ -497,12 +517,6 @@ namespace Meebey.SmartIrc4net
             if (channels) {
                 _RejoinChannels();
             }
-        }
-
-        /// <param name="login">If the login data should be sent, after successful connect.</param>
-        public void Reconnect(bool login)
-        {
-            Reconnect(login, AutoRejoin);
         }
 
         /// <summary>
@@ -534,7 +548,7 @@ namespace Meebey.SmartIrc4net
             if (username != null && username.Length > 0) {
                 _Username = username.Replace(" ", "");
             } else {
-                _Username = Environment.UserName.Replace(" ", "");
+                _Username = System.Environment.UserName.Replace(" ", "");
             }
 
             if (password != null && password.Length > 0) {
@@ -1366,6 +1380,8 @@ namespace Meebey.SmartIrc4net
                     case ReplyCode.WhoIsChannels:
                     case ReplyCode.EndOfWhoIs:
                         return ReceiveType.WhoIs;
+                    case ReplyCode.IsOn:
+                        return ReceiveType.IsOn;
                     case ReplyCode.WhoWasUser:
                     case ReplyCode.EndOfWhoWas:
                         return ReceiveType.WhoWas;
@@ -1575,6 +1591,9 @@ namespace Meebey.SmartIrc4net
                         break;
                     case ReplyCode.WhoReply:
                         _Event_RPL_WHOREPLY(ircdata);
+                        break;
+                    case ReplyCode.WhoIsUser:
+                        _Event_RPL_WHOISUSERREPLY(ircdata);
                         break;
                     case ReplyCode.EndOfWho:
                         _Event_RPL_ENDOFWHO(ircdata);
@@ -2192,10 +2211,7 @@ namespace Meebey.SmartIrc4net
         private void _Event_ERROR(IrcMessageData ircdata)
         {
             string message = ircdata.Message;
-#if LOG4NET
-            Logger.Connection.Info("received ERROR from IRC server");
-#endif
-
+            Log("<color=read>Received ERROR from IRC server</color>");
             if (OnError != null) {
                 OnError(this, new ErrorEventArgs(ircdata, message));
             }
@@ -2981,6 +2997,20 @@ namespace Meebey.SmartIrc4net
 
             if (OnNowAway != null) {
                 OnNowAway(this, new IrcEventArgs(ircdata));
+            }
+        }
+
+        private void _Event_RPL_ISONREPLY(IrcMessageData ircdata)
+        {
+            OnIsOn?.Invoke(this, new IsOnEventArgs(ircdata));
+        }
+
+        private void _Event_RPL_WHOISUSERREPLY(IrcMessageData ircdata)
+        {
+            WhoIsUserInfo info = WhoIsUserInfo.Parse(ircdata);
+            
+            if (OnWhoIsUser!= null) {
+                OnWhoIsUser(this, new WhoIsUserEventArgs(ircdata, info));
             }
         }
 

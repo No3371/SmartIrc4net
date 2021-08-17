@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace Meebey.SmartIrc4net
 {
@@ -46,22 +47,11 @@ namespace Meebey.SmartIrc4net
             }
             set {
                 _MaxModeChanges = value;
-            }
+            }   
         }
 
-#if LOG4NET
-        public IrcCommands()
-        {
-            Logger.Main.Debug("IrcCommands created");
-        }
-#endif
-        
-#if LOG4NET
-        ~IrcCommands()
-        {
-            Logger.Main.Debug("IrcCommands destroyed");
-        }
-#endif
+        public IrcCommands () {}
+        public IrcCommands (CancellationToken cancellationToken) : base(cancellationToken) {}
     
         // API commands
         /// <summary>

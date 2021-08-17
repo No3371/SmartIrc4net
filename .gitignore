@@ -19,3 +19,4 @@ smartirc4net.pc
 *.suo
 *.user
 *.sln.docstates
+.vscode
